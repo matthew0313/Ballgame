@@ -4,10 +4,17 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Player : MonoBehaviour, ISavable
 {
-    [SerializeField] Transform arrow;
     [SerializeField] LayerMask groundLayer;
     [SerializeField] float maxDragDistance;
     [SerializeField] float jumpForce;
+    [SerializeField] AnimationCurve jumpCurve;
+
+    [Header("Display")]
+    [SerializeField] Transform arrow;
+    [SerializeField] SpriteRenderer arrowSprite;
+    [SerializeField] Color arrowColorLow, arrowColorHigh;
+    [SerializeField] TrailRenderer trail;
+    
 
     [Header("Audio")]
     [SerializeField] AudioSource jumpAudio;
@@ -62,6 +69,7 @@ public class Player : MonoBehaviour, ISavable
         transform.position = data.playerPosition;
         rb.linearVelocity = data.playerVelocity;
         rb.angularVelocity = data.playerAngularVelocity;
+        trail.Clear();
     }
 
     class PlayerFSMVals : FSMVals { }
@@ -117,13 +125,16 @@ public class Player : MonoBehaviour, ISavable
                         return;
                     }
                     Vector2 tmp = Vector2.ClampMagnitude((Camera.main.ScreenToWorldPoint(startPos) - Camera.main.ScreenToWorldPoint(Input.mousePosition)), origin.maxDragDistance);
+
                     origin.arrow.up = tmp.normalized;
                     origin.arrow.localScale = new Vector2(1.0f, tmp.magnitude);
+                    origin.arrowSprite.color = Color.Lerp(origin.arrowColorLow, origin.arrowColorHigh, tmp.magnitude / origin.maxDragDistance);
+
                     if (!Input.GetMouseButton(0))
                     {
                         origin.jumpAudio.Play();
                         origin.rb.angularVelocity = 0.0f;
-                        origin.rb.linearVelocity = tmp * origin.jumpForce;
+                        origin.rb.linearVelocity = tmp.normalized * origin.jumpForce * origin.jumpCurve.Evaluate(tmp.magnitude / origin.maxDragDistance);
                         parentLayer.ChangeState("Idle");
                     }
                 }

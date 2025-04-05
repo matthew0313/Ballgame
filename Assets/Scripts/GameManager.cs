@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
 
     Player player;
 
-    [SerializeField] Transform bottomPlatform;
+    [SerializeField] Transform bottomPoint;
     [SerializeField] GameObject platformPrefab;
     [SerializeField] float platformInterval = 5.0f;
     [SerializeField] float platformXMin = -8.0f, platformXMax = 8.0f;
@@ -43,14 +43,14 @@ public class GameManager : MonoBehaviour
     }
     void UpdateHeight()
     {
-        float height = player.transform.position.y - bottomPlatform.position.y;
+        float height = player.transform.position.y - bottomPoint.position.y;
         heightHook.SetValue(height);
         if (height > bestHeightHook.value) bestHeightHook.SetValue(height);
     }
     List<GameObject> platforms = new();
     void SpawnPlatforms()
     {
-        float lastPlatformY = platforms.Count > 0 ? platforms[platforms.Count - 1].transform.position.y : bottomPlatform.position.y;
+        float lastPlatformY = platforms.Count > 0 ? platforms[platforms.Count - 1].transform.position.y : bottomPoint.position.y;
         float lastPlatformX = platforms.Count > 0 ? platforms[platforms.Count - 1].transform.position.x : 0.0f;
         while (player.transform.position.y + 50.0f > lastPlatformY)
         {
