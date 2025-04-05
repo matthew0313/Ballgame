@@ -19,12 +19,12 @@ public class SimplePositionTweenTab : Tab
         {
             tween = rectTransform.DOAnchorPos(targetPosition, duration).SetDelay(delay).SetEase(ease).SetAutoKill(false).SetUpdate(independantUpdate);
         }
-        tween.OnComplete(null);
+        tween.OnStepComplete(null);
         tween.PlayForward();
     }
     public override void CloseTab()
     {
-        tween.OnComplete(base.CloseTab);
+        tween.OnStepComplete(base.CloseTab);
         tween.PlayBackwards();
     }
     private void OnDisable()

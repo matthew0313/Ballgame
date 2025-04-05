@@ -15,6 +15,12 @@ public class GlobalManager : MonoBehaviour
     {
         Instance = Instantiate(Resources.Load<GlobalManager>("GlobalManager"));
         DontDestroyOnLoad(Instance.gameObject);
+
+        Instance.handler.Load(Path.Combine(savePath, "Settings.json"), (content) =>
+        {
+            SettingsSave data = JsonUtility.FromJson<SettingsSave>(content);
+            if (data != null) Settings.Load(data);
+        });
     }
 
     [SerializeField] FloatHook sceneLoadingProgressHook;
@@ -26,7 +32,7 @@ public class GlobalManager : MonoBehaviour
     {
         LoadScene("Game", () =>
         {
-            Load((data) => { if (GameManager.Instance != null && data != null) GameManager.Instance.LoadGame(data); });
+            LoadGame((data) => { if (GameManager.Instance != null && data != null) GameManager.Instance.LoadGame(data); });
         });
     }
     public Action<string> onSceneWillLoad;
@@ -68,11 +74,15 @@ public class GlobalManager : MonoBehaviour
     }
     const string savePath = "Saves";
     FileHandler handler = new LocalFileHandler();
-    public void Save(SaveData data)
+    public void SaveSettings()
+    {
+        handler.Save(Path.Combine(savePath, "Settings.json"), JsonUtility.ToJson(Settings.Save()), null);
+    }
+    public void SaveGame(SaveData data)
     {
         handler.Save(Path.Combine(savePath, "Save.json"), JsonUtility.ToJson(data), null);
     }
-    void Load(Action<SaveData> onLoad)
+    void LoadGame(Action<SaveData> onLoad)
     {
         handler.Load(Path.Combine(savePath, "Save.json"), (content) =>
         {

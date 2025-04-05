@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] float autoSaveInterval = 60.0f;
 
     List<ISavable> savables = new();
+
+    public bool paused => pausedHook.value;
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
@@ -72,7 +74,7 @@ public class GameManager : MonoBehaviour
         if(autoSaveCounter >= autoSaveInterval)
         {
             autoSaveCounter = 0.0f;
-            GlobalManager.Instance.Save(SaveGame());
+            GlobalManager.Instance.SaveGame(SaveGame());
         }
     }
     private void OnEnable()
@@ -91,13 +93,13 @@ public class GameManager : MonoBehaviour
     }
     void OnSceneWillLoad(string sceneName)
     {
-        GlobalManager.Instance.Save(SaveGame());
+        GlobalManager.Instance.SaveGame(SaveGame());
         pausedHook.SetValue(false);
         Time.timeScale = 1.0f;
     }
     private void OnApplicationQuit()
     {
-        GlobalManager.Instance.Save(SaveGame());
+        GlobalManager.Instance.SaveGame(SaveGame());
     }
     public void ReturnToTitle()
     {

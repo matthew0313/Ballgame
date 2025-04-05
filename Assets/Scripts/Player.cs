@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Player : MonoBehaviour, ISavable
@@ -9,6 +8,9 @@ public class Player : MonoBehaviour, ISavable
     [SerializeField] LayerMask groundLayer;
     [SerializeField] float maxDragDistance;
     [SerializeField] float jumpForce;
+
+    [Header("Audio")]
+    [SerializeField] AudioSource jumpAudio;
 
     [Header("Debug")]
     [SerializeField] string FSMPath;
@@ -31,7 +33,6 @@ public class Player : MonoBehaviour, ISavable
     List<Collider2D> collidingGrounds = new();
     private void OnCollisionStay2D(Collision2D collision)
     {
-        Debug.Log(collision.GetContact(0).point);
         if(collision.GetContact(0).point.y < transform.position.y - 0.05f)
         {
             if(!collidingGrounds.Contains(collision.collider))
@@ -53,12 +54,14 @@ public class Player : MonoBehaviour, ISavable
     {
         data.playerPosition = transform.position;
         data.playerVelocity = rb.linearVelocity;
+        data.playerAngularVelocity = rb.angularVelocity;
     }
 
     public void Load(SaveData data)
     {
         transform.position = data.playerPosition;
         rb.linearVelocity = data.playerVelocity;
+        rb.angularVelocity = data.playerAngularVelocity;
     }
 
     class PlayerFSMVals : FSMVals { }
@@ -89,7 +92,7 @@ public class Player : MonoBehaviour, ISavable
                 public override void OnStateUpdate()
                 {
                     base.OnStateUpdate();
-                    if (Input.GetMouseButtonDown(0)) parentLayer.ChangeState("Dragging");
+                    if (Input.GetMouseButtonDown(0) && !GameManager.Instance.paused) parentLayer.ChangeState("Dragging");
                 }
             }
             class Dragging : State<Player, PlayerFSMVals>
@@ -108,11 +111,17 @@ public class Player : MonoBehaviour, ISavable
                 public override void OnStateUpdate()
                 {
                     base.OnStateUpdate();
+                    if(GameManager.Instance.paused)
+                    {
+                        parentLayer.ChangeState("Idle");
+                        return;
+                    }
                     Vector2 tmp = Vector2.ClampMagnitude((Camera.main.ScreenToWorldPoint(startPos) - Camera.main.ScreenToWorldPoint(Input.mousePosition)), origin.maxDragDistance);
                     origin.arrow.up = tmp.normalized;
                     origin.arrow.localScale = new Vector2(1.0f, tmp.magnitude);
                     if (!Input.GetMouseButton(0))
                     {
+                        origin.jumpAudio.Play();
                         origin.rb.angularVelocity = 0.0f;
                         origin.rb.linearVelocity = tmp * origin.jumpForce;
                         parentLayer.ChangeState("Idle");
