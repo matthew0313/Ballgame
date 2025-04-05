@@ -11,9 +11,11 @@ public class HookedStringBuilderText : MonoBehaviour
     [SerializeField] TMP_Text text;
     private void OnEnable()
     {
+        bool languageDependant = false;
         foreach(var i in elements)
         {
-            if (i.type == HookStringBuilderElementType.IntegerHook)
+            if (i.type == HookStringBuilderElementType.LangText) languageDependant = true;
+            else if (i.type == HookStringBuilderElementType.IntegerHook)
             {
                 i.integerHook.AssignCallback(OnValueChange);
             }
@@ -22,13 +24,16 @@ public class HookedStringBuilderText : MonoBehaviour
                 i.floatHook.AssignCallback(OnValueChange);
             }
         }
+        if (languageDependant) Settings.onLanguageChange += OnValueChange;
         OnValueChange();
     }
     private void OnDisable()
     {
+        bool languageDependant = false;
         foreach (var i in elements)
         {
-            if (i.type == HookStringBuilderElementType.IntegerHook)
+            if (i.type == HookStringBuilderElementType.LangText) languageDependant = true;
+            else if (i.type == HookStringBuilderElementType.IntegerHook)
             {
                 i.integerHook.RemoveCallback(OnValueChange);
             }
@@ -37,10 +42,12 @@ public class HookedStringBuilderText : MonoBehaviour
                 i.floatHook.RemoveCallback(OnValueChange);
             }
         }
+        if(languageDependant) Settings.onLanguageChange -= OnValueChange;
     }
+    StringBuilder sb = new();
     void OnValueChange()
     {
-        StringBuilder sb = new();
+        sb.Clear();
         foreach (var element in elements)
         {
             switch (element.type)
@@ -48,11 +55,17 @@ public class HookedStringBuilderText : MonoBehaviour
                 case HookStringBuilderElementType.Text:
                     sb.Append(element.text);
                     break;
+                case HookStringBuilderElementType.LangText:
+                    sb.Append(element.langText.text);
+                    break;
                 case HookStringBuilderElementType.IntegerHook:
                     sb.Append((element.integerHook.value * element.integerMultiplier).ToString());
                     break;
                 case HookStringBuilderElementType.FloatHook:
                     sb.Append((Mathf.Round(element.floatHook.value * element.floatMultiplier * Mathf.Pow(10, element.floatRounding)) / Mathf.Pow(10, element.floatRounding)).ToString());
+                    break;
+                case HookStringBuilderElementType.StringHook:
+                    sb.Append(element.stringHook.value);
                     break;
             }
         }

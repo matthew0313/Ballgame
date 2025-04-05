@@ -2,25 +2,24 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HookedDropdown : MonoBehaviour
+public class HookedEnabler : MonoBehaviour
 {
-    [SerializeField] IntegerHook hook;
-    
+    [SerializeField] BoolHook hook;
+    [SerializeField] bool invert = false;
+
     [Header("Display")]
-    [SerializeField] Dropdown dropdown;
+    [SerializeField] GameObject target;
     private void OnEnable()
     {
         hook.AssignCallback(OnValueChange);
-        dropdown.onValueChanged.AddListener(hook.SetValue);
         OnValueChange();
     }
     private void OnDisable()
     {
         hook.RemoveCallback(OnValueChange);
-        dropdown.onValueChanged.RemoveListener(hook.SetValue);
     }
     void OnValueChange()
     {
-        dropdown.value = hook.value;
+        target.SetActive(invert ? !hook.value : hook.value);
     }
 }

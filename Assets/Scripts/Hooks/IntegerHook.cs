@@ -6,5 +6,24 @@ using UnityEngine;
 
 public abstract class IntegerHook : Hook<int>
 {
-
+    public void Add(int value)
+    {
+        SetValue(this.value + value);
+    }
+    public void Subtract(int value)
+    {
+        SetValue(this.value - value);
+    }
+    public void Multiply(int value)
+    {
+        SetValue(this.value * value);
+    }
+    public void Divide(int value)
+    {
+        SetValue(this.value / value);
+    }
+    public void Remainder(int value)
+    {
+        SetValue(this.value % value);
+    }
 }

@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     [Header("Hooks")]
     [SerializeField] FloatHook heightHook;
     [SerializeField] FloatHook bestHeightHook;
+    [SerializeField] BoolHook pausedHook;
 
     [Header("Save")]
     [SerializeField] float autoSaveInterval = 60.0f;
@@ -36,6 +37,7 @@ public class GameManager : MonoBehaviour
         UpdateHeight();
         SpawnPlatforms();
         UpdateAutoSave();
+        if (Input.GetKeyDown(KeyCode.Escape)) pausedHook.SetValue(!pausedHook.value);
     }
     void UpdateHeight()
     {
@@ -75,19 +77,31 @@ public class GameManager : MonoBehaviour
     }
     private void OnEnable()
     {
-        GlobalManager.Instance.onSceneWillLoad += OnSceneWillLoad;  
+        GlobalManager.Instance.onSceneWillLoad += OnSceneWillLoad;
+        pausedHook.AssignCallback(OnPausedHookValueChange);
     }
     private void OnDisable()
     {
         GlobalManager.Instance.onSceneWillLoad -= OnSceneWillLoad;
+        pausedHook.RemoveCallback(OnPausedHookValueChange);
+    }
+    void OnPausedHookValueChange()
+    {
+        Time.timeScale = pausedHook.value ? 0.0f : 1.0f;
     }
     void OnSceneWillLoad(string sceneName)
     {
         GlobalManager.Instance.Save(SaveGame());
+        pausedHook.SetValue(false);
+        Time.timeScale = 1.0f;
     }
     private void OnApplicationQuit()
     {
         GlobalManager.Instance.Save(SaveGame());
+    }
+    public void ReturnToTitle()
+    {
+        GlobalManager.Instance.LoadScene("Title");
     }
     public SaveData SaveGame()
     {

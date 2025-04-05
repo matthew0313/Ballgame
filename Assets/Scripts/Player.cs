@@ -12,12 +12,10 @@ public class Player : MonoBehaviour, ISavable
 
     [Header("Debug")]
     [SerializeField] string FSMPath;
-    new CircleCollider2D collider;
     Rigidbody2D rb;
     Player_TopLayer topLayer;
     private void Awake()
     {
-        collider = GetComponent<CircleCollider2D>();
         rb = GetComponent<Rigidbody2D>();
         topLayer = new Player_TopLayer(this, new PlayerFSMVals());
 #if UNITY_EDITOR

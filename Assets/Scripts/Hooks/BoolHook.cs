@@ -6,5 +6,8 @@ using UnityEngine;
 
 public abstract class BoolHook : Hook<bool>
 {
-
+    public void Invert()
+    {
+        SetValue(!value);
+    }
 }
